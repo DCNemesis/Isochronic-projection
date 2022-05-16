@@ -1,0 +1,8 @@
+osmnx==1.1.2 
+matplotlib==3.1.3 
+networkx 
+shapely 
+geopandas 
+numpy 
+tqdm 
+argparse
