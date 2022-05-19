@@ -4,26 +4,35 @@ import math
 from tqdm import tqdm
 from shapely.geometry import LineString
 import geopandas as gpd
+from numpy import inf
 
 
 def main():
-    lat = 51.510357
-    lon = -0.116773
-    dist = 16000
-    cpus=2
+    lat = 45.50390
+    lon = -73.57872
+    dist = 15000
+    cpus = 2
     pct_extremes = .025
     isos = 6
     iso_mins = 15
     iso_factor = 30
-    node_size = 5
-    output_loc = './isochronemap.png'
-    G = ox.graph_from_point((lat, lon), dist=dist, network_type='drive')
+    node_size = 3
+    output_loc = './images/mcgill_isochronic_map_walking_only.png'
+    ox.config(log_console=True, use_cache=True, log_file='./isochronemap.log')
+    G = ox.graph_from_point((lat, lon), dist=dist, network_type='walk')
     #gdf_nodes = ox.graph_to_gdfs(G, edges=False)
     #x, y = gdf_nodes['geometry'].unary_union.centroid.xy
     G = ox.project_graph(G)
-    points = gpd.points_from_xy([lon], [lat], crs=G.graph['crs'])
-    proj_points = points.to_crs(G.graph['crs'])
-    center_node = ox.distance.nearest_nodes(G, proj_points.x[0], proj_points.y[0])
+    #points = gpd.points_from_xy([lon], [lat], crs=G.graph['crs'])
+    #proj_points = points.to_crs(G.graph['crs'])
+    #center_node = ox.distance.nearest_nodes(G, proj_points.x[0], proj_points.y[0])
+
+    min_dist = inf
+    for node in tqdm(list(G.nodes)):
+        dist = math.sqrt((lat - G.nodes[node]['lat'])**2 + (lon - G.nodes[node]['lon'])**2)
+        if dist < min_dist:
+            min_dist = dist
+            center_node = node
 
     hwy_speeds = {"footway": 4.5, "cycleway": 10, "residential": 35, "secondary": 50, "tertiary": 60}
     G = ox.add_edge_speeds(G, hwy_speeds)
